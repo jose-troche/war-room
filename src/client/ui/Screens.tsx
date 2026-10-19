@@ -330,5 +330,9 @@ export function ToastView() {
 
 export function PausedBadge() {
   if (!paused.value || mode.value !== 'solo') return null;
-  return <div class="attract-badge" style={{ left: '50%', transform: 'translateX(-50%)', top: isMobile.value ? 'auto' : 60, bottom: isMobile.value ? 200 : 'auto', color: 'var(--sev-medium)' }}>❚❚ PAUSED · Space to resume</div>;
+  return (
+    <div class="attract-badge paused-badge" style={{ color: 'var(--sev-medium)' }}>
+      ❚❚ PAUSED · {isMobile.value ? 'tap ▶ to resume' : 'Space to resume'}
+    </div>
+  );
 }

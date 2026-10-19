@@ -196,6 +196,11 @@ interface Report { id; t; agent; severity: 'critical'|'high'|'medium'|'low'|'inf
   - **Throttle**: one surfaced card every 4s at most (FLASH bypasses this). Show the top 5 by
     score with time decay `exp(-age/45s)`.
   - **Digest**: routine items that aren't surfaced are counted into a 30s "Routine digest" card.
+  - **Planning cell** (`coa.ts`): every 2.5 seconds a fresh `AiCommander` for the player's
+    side plans against the current View. It infers existing assignments from unit missions,
+    so it is memory-less. Its commands become ranked recommendations. Hand-built node advice
+    yields to the plan, units under way are never re-tasked, and purchases rank below
+    operations.
   - **COA generation** (`coa.ts`): for a threat at a location, find the nearest idle capable
     friendly units (anti-ship for ships, fighters/SAMs for air, destroyers for subs, armor for
     land). Build up to two `SuggestedAction`s with ETAs. Each action is an `Order`, so the
@@ -205,6 +210,16 @@ interface Report { id; t; agent; severity: 'critical'|'high'|'medium'|'low'|'inf
   - Counters `received` and `surfaced` feed the Signal vs Noise meter.
 
 ---
+
+### 4.1 Balance and tuning method
+Balance was tuned with headless simulations in Vitest:
+
+- **AI vs AI mirror matches** across 20–30 seeds. The final scenario gives Blue about 47%,
+  after Blue gained a destroyer off San Diego.
+- **An ATLAS follower**: a bot that executes the top recommendations at human-like rates,
+  run against each difficulty level.
+- **Kill tallies** showing who kills whom, used to find AI mistakes. One example: fighters
+  patrolling inside destroyer air-defense ranges, which led to threat-aware patrol points.
 
 ## 5. Natural-language queries (`src/client/nlq`)
 
@@ -266,6 +281,11 @@ same pipeline. The mic button is hidden if the API is missing.
 ---
 
 ## 7. UI implementation notes
+
+- **Glossary** (`glossary.ts`, `ui/Gloss.tsx`): `<Gloss text>` wraps the first occurrence of
+  each known acronym or jargon term in an `<abbr title>`. Tapping it on a touch device shows the
+  definition as a toast. Buttons get a `title` listing the definitions instead, so taps
+  still trigger the action.
 
 - **Design tokens** live in CSS custom properties: `--bg`, `--panel`, `--ink`, `--blue`, `--red`,
   `--sev-critical`, and so on. The theme is dark-only, which suits a war room.

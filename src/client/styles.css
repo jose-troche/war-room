@@ -465,3 +465,6 @@ abbr[title]:focus-visible { outline: 1px solid var(--accent); }
 .glossary > div { display: grid; grid-template-columns: 92px 1fr; gap: 10px; padding: 5px 8px; border-radius: 6px; background: var(--panel-2); }
 .glossary dt { font: 700 13px var(--display); letter-spacing: 0.06em; color: var(--accent); }
 .glossary dd { margin: 0; color: var(--ink-2); }
+
+.paused-badge { left: 50%; transform: translateX(-50%); top: 60px; white-space: nowrap; }
+.app.mobile .paused-badge { top: calc(64px + env(safe-area-inset-top)); }

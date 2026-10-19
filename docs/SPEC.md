@@ -66,8 +66,9 @@ Seven **Strategic Nodes** are on the map:
 
 **Victory conditions** (whichever happens first):
 
-1. **Dominance**: reach **1,000 Victory Points (VP)**. Each held node earns +1 VP per
-   second. Holding a majority (4 or more nodes) earns a +50% bonus.
+1. **Dominance**: reach **1,000 Victory Points (VP)**. Each held node earns +0.35 VP per
+   second (tuned so matches last 8–12 minutes). Holding a majority (4 or more nodes)
+   earns a +50% bonus.
 2. **Decapitation**: destroy the enemy HQ (very heavily defended, and reachable only by
    bombers, missiles and strike drones).
 3. **Time limit**: after **15:00** of match time, the side with more VP wins.
@@ -166,7 +167,11 @@ ATLAS decides what reaches the commander:
      *Auto-pause on FLASH* is on. Optional voice readout.
    - **PRIORITY** (high): important and actionable soon.
    - **ROUTINE**: batched into a digest every 30s ("4 routine updates").
-4. **Recommendations**: when it surfaces a threat or an opportunity, ATLAS proposes one or two
+4. **Recommendations**: ATLAS runs a **planning cell**, a memory-less shadow commander for the
+   player's side (the same planner the machine opponent uses), every 2.5 seconds. Its intended
+   moves become one-click recommendations. They are coherent, units already under way are
+   never re-tasked, and advice the player ignored is simply proposed again. In addition, when
+   it surfaces a threat or an opportunity, ATLAS proposes one or two
    **courses of action** with one-click buttons. The proposals are computed from available
    friendly assets. For example: *"Send destroyer HALBERD to Panama, ETA 35s"* or
    *"Strike with bomber wing ANVIL-1"*.
@@ -265,8 +270,10 @@ mic button is hidden where it isn't. ATLAS can read FLASH items and SITREPs alou
 - **Map overlays**: the legend (collapsible, collapsed by default on small screens), fit-all,
   zoom ±, and layer toggles (sensor coverage, satellite tracks, threat rings).
 
-### 6.4 Mobile layout (360–767px wide)
+### 6.4 Mobile layout (360–899px wide)
 - The map fills the screen. A compact top bar shows the VP bar, clock and pause.
+- The opening view frames the theater around the player's own forces at a legible zoom.
+  Edge markers point to off-screen objectives, and *Fit all* still frames everything.
 - A **bottom sheet** has tabs: **Brief** (default) · **Forces** · **Objectives** · **Ask**.
   The sheet has three heights: peek, half and full. Peek shows the top FLASH or PRIORITY item.
 - Touch: tap selects, tap on an empty map area while something is selected orders a move, tap an
@@ -291,6 +298,14 @@ mic button is hidden where it isn't. ATLAS can read FLASH items and SITREPs alou
   **Rematch** and **Back to the war room** buttons.
 
 ---
+
+### 6.7 Glossary
+- Every acronym and piece of jargon shown in the UI has a definition. This covers VP, CP,
+  SITREP, ETA, RTB, HQ, AWACS, SAM, ASAT, CAP, GPS, the DDG/DD/CVN/CV/SSN/SS hull prefixes,
+  J2, the H+ clock, and terms like bingo, winchester, sealift, contested and chokepoint.
+- On desktop the definition appears on hover. On touch devices, tapping the term shows it.
+  Buttons carry the definitions in their tooltip. The full glossary is in *How to play* and
+  in the menu.
 
 ## 7. Map and camera
 
@@ -346,11 +361,14 @@ doesn't cover the map.
   FLASH every 10 seconds.
 - **AI difficulty**:
 
-| Level | Reaction interval | Aggression | Requisition |
-| --- | --- | --- | --- |
-| Recruit | 8s | Low | Conservative |
-| Veteran | 5s | Medium | Balanced |
-| Elite | 3s | High | Focuses on chokepoints, coordinates strikes, hunts satellites |
+| Level | First move | Reaction interval | Logistics (CP income) | Behavior |
+| --- | --- | --- | --- | --- |
+| Recruit | after 25s | 15s | 50% | Cautious, rarely strikes |
+| Veteran | after 8s | 7s | 80% | Balanced |
+| Elite | after 2s | 3s | 100% (mirror strength) | Coordinated strikes, decapitation raids, hunts satellites |
+
+A human acts on a handful of things at a time, so the lower levels compensate. The levels
+were tuned with headless simulations of a player who follows ATLAS's recommendations.
 
 ---
 
