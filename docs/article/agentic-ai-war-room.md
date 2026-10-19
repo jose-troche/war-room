@@ -1,8 +1,8 @@
 <!--
 LinkedIn publishing notes (not part of the article):
-- Cover image: docs/article/cover.png (or war-room-in-action.png)
-- Upload images where marked [Image: ...]; LinkedIn does not render Markdown images or tables,
-  so tables are written so they can be pasted as short bulleted lists if preferred.
+- Main media: a video of a live game.
+- LinkedIn does not render Markdown images: upload war-room-in-action.png and architecture.png
+  where they appear below.
 - Suggested headline (≤ 100 chars) is the H1 below. Suggested post to share the article is at the end.
 -->
 
@@ -10,7 +10,7 @@ LinkedIn publishing notes (not part of the article):
 
 **Most leaders aren't short of data. They're short of attention.** I built a game to show what happens when AI agents take on the reading and the human keeps the deciding.
 
-![WAR ROOM in action: the ATLAS brief on the left turns 112 staff reports into 7 surfaced items, each with one-click recommended actions](war-room-in-action.png)
+**Play it now in your browser: [war-room.troche.workers.dev](https://war-room.troche.workers.dev)**
 
 ---
 
@@ -25,9 +25,11 @@ No human can read all of it. Usually one of two things happens:
 
 Swap "theater commander" for COO, CISO, hospital chief medical officer, head of supply chain or plant manager, and nothing else changes. It's the same problem.
 
-**WAR ROOM** is a real-time strategy game I built to make this problem, and one way to solve it, something you can feel in 15 minutes. It runs in a browser on desktop or phone, so there's nothing to install.
+**WAR ROOM** is a real-time strategy game I built to make this problem, and one way to solve it, something you can feel in 15 minutes. It runs in a browser on desktop or phone, so there's nothing to install: [war-room.troche.workers.dev](https://war-room.troche.workers.dev).
 
 ---
+
+![WAR ROOM in action: the ATLAS brief on the left turns 112 staff reports into 7 surfaced items, each with one-click recommended actions](war-room-in-action.png)
 
 ## What the game is
 
@@ -105,15 +107,20 @@ A language model shows up in exactly one place: when you ask ATLAS an open-ended
 
 **For technologists, the key design choices:**
 
-| Layer | What it does | Design choice worth copying |
-| --- | --- | --- |
-| **World (simulation engine)** | Holds the ground truth and updates 4 times a second | Deterministic and seeded, so any situation can be reproduced exactly for testing and debugging |
-| **Need-to-know filter (fog of war)** | Each side gets a *view* containing only what its sensors detect | Agents consume the same view the human does. They can't "cheat", and they can't leak what they shouldn't know |
-| **Specialist agents** | Compare consecutive views and emit structured reports: `{agent, severity, subject, location, text, actions}` | A structured report format, not free text, so the coordinator can score, merge and route reports |
-| **ATLAS (coordinator)** | Scores, de-duplicates, throttles, escalates and recommends | Explicit, tunable scoring weights, plus hard limits (5 items at most, one new item every few seconds, FLASH-only interrupts) |
-| **Course-of-action planner** | Matches each threat to the nearest *available* capable assets, with travel times | Recommendations are executable orders, so the button *is* the action |
-| **Ask ATLAS** | Natural language by text or voice | Rules-based parser first; grounded LLM fallback second; confirmation before any command |
-| **Platform** | Solo play runs entirely in the browser; multiplayer uses one Cloudflare Durable Object per game room as the source of truth | The same engine code runs on the client and the server. The server validates every order, and solo play costs nothing to serve |
+- **World (simulation engine):** holds the ground truth and updates 4 times a second.
+  *Worth copying:* it's deterministic and seeded, so any situation can be reproduced exactly for testing and debugging.
+- **Need-to-know filter (fog of war):** each side gets a *view* containing only what its sensors detect.
+  *Worth copying:* agents consume the same view the human does. They can't "cheat", and they can't leak what they shouldn't know.
+- **Specialist agents:** compare consecutive views and emit structured reports: `{agent, severity, subject, location, text, actions}`.
+  *Worth copying:* a structured report format, not free text, so the coordinator can score, merge and route reports.
+- **ATLAS (coordinator):** scores, de-duplicates, throttles, escalates and recommends.
+  *Worth copying:* explicit, tunable scoring weights, plus hard limits (5 items at most, one new item every few seconds, FLASH-only interrupts).
+- **Course-of-action planner:** matches each threat to the nearest *available* capable assets, with travel times.
+  *Worth copying:* recommendations are executable orders, so the button *is* the action.
+- **Ask ATLAS:** natural language by text or voice.
+  *Worth copying:* rules-based parser first, grounded LLM fallback second, and confirmation before any command.
+- **Platform:** solo play runs entirely in the browser; multiplayer uses one Cloudflare Durable Object per game room as the source of truth.
+  *Worth copying:* the same engine code runs on the client and the server. The server validates every order, and solo play costs nothing to serve.
 
 Notice what isn't on the diagram: no GPU cluster, no vector database, no agent framework. The whole thing runs on the Cloudflare free tier. **Good agentic design is mostly about information flow and accountability, not infrastructure.**
 
@@ -123,16 +130,40 @@ Notice what isn't on the diagram: no GPU cluster, no vector database, no agent f
 
 Every one of these settings has the same shape: **too many signals, a few decisions that matter, and a human who stays accountable.**
 
-| Industry | The "world" | Specialist agents watch… | The Chief of Staff surfaces… | The human decides… |
-| --- | --- | --- | --- | --- |
-| **Healthcare** (hospital command center) | Beds, patients, staff, ED queue | Vitals, labs, bed capacity, staffing, transport | "Patient in Bed 12 meets early-sepsis criteria; rapid response team is 4 minutes away" | Escalate care, open surge beds |
-| **Cybersecurity** (SOC) | Endpoints, identities, network | Endpoint alerts, logins, cloud config, threat intel | "Same credential used from 2 countries in 10 minutes. Recommend: force reset and isolate laptop" | Contain, escalate, accept risk |
-| **Supply chain** (control tower) | Orders, inventory, shipments | Suppliers, ports, carriers, weather, demand | "Port closure delays 3 inbound containers; 2 customer orders at risk. Recommend: reroute via air for SKU 114" | Expedite, reallocate, notify customers |
-| **Financial services** | Transactions, positions, markets | Fraud signals, liquidity, market moves, compliance | "Exposure limit will be breached at 14:30 at current rate. Recommend: hedge 20%" | Trade, block, report |
-| **Energy and utilities** | Grid, assets, demand | Load, generation, weather, outages, field crews | "Feeder 7 overload likely in 40 minutes. Recommend: shift 3 MW from storage" | Dispatch, curtail, deploy crews |
-| **Airlines and logistics** (disruption ops) | Fleet, crews, schedules | Weather, maintenance, crew legality, gates | "Storm will strand 6 crews by 18:00. Recommend: swap aircraft on 3 rotations" | Re-plan, cancel, rebook |
-| **Customer operations** | Tickets, accounts, social channels | Volume, sentiment, churn signals, outages | "Spike of 140 tickets about one bug; 3 strategic accounts affected. Recommend: incident and proactive outreach" | Declare incident, allocate team |
-| **Manufacturing** | Lines, machines, quality | Sensor drift, scrap, maintenance, materials | "Line 2 vibration trend predicts failure within 1 shift. Recommend: swap to Line 3 tonight" | Schedule maintenance, re-plan production |
+For each one: what the specialist agents watch, an example of what the Chief of Staff surfaces, and what the human decides.
+
+- **Healthcare (hospital command center)**
+  - *Agents watch:* vitals, labs, bed capacity, staffing, transport
+  - *Brief:* "Patient in Bed 12 meets early-sepsis criteria; rapid response team is 4 minutes away"
+  - *Human decides:* escalate care, open surge beds
+- **Cybersecurity (security operations center)**
+  - *Agents watch:* endpoint alerts, logins, cloud configuration, threat intelligence
+  - *Brief:* "Same credential used from 2 countries in 10 minutes. Recommend: force reset and isolate laptop"
+  - *Human decides:* contain, escalate, accept the risk
+- **Supply chain (control tower)**
+  - *Agents watch:* suppliers, ports, carriers, weather, demand
+  - *Brief:* "Port closure delays 3 inbound containers; 2 customer orders at risk. Recommend: reroute via air for SKU 114"
+  - *Human decides:* expedite, reallocate, notify customers
+- **Financial services**
+  - *Agents watch:* fraud signals, liquidity, market moves, compliance
+  - *Brief:* "Exposure limit will be breached at 14:30 at current rate. Recommend: hedge 20%"
+  - *Human decides:* trade, block, report
+- **Energy and utilities**
+  - *Agents watch:* load, generation, weather, outages, field crews
+  - *Brief:* "Feeder 7 overload likely in 40 minutes. Recommend: shift 3 MW from storage"
+  - *Human decides:* dispatch, curtail, deploy crews
+- **Airlines and logistics (disruption operations)**
+  - *Agents watch:* weather, maintenance, crew legality, gates
+  - *Brief:* "Storm will strand 6 crews by 18:00. Recommend: swap aircraft on 3 rotations"
+  - *Human decides:* re-plan, cancel, rebook
+- **Customer operations**
+  - *Agents watch:* ticket volume, sentiment, churn signals, outages
+  - *Brief:* "Spike of 140 tickets about one bug; 3 strategic accounts affected. Recommend: open an incident and reach out proactively"
+  - *Human decides:* declare an incident, allocate a team
+- **Manufacturing**
+  - *Agents watch:* sensor drift, scrap, maintenance, materials
+  - *Brief:* "Line 2 vibration trend predicts failure within 1 shift. Recommend: swap to Line 3 tonight"
+  - *Human decides:* schedule maintenance, re-plan production
 
 ---
 
@@ -170,6 +201,8 @@ That's the job description for leaders in the agentic era, in any industry.
 
 ---
 
+**Try commanding it yourself: [war-room.troche.workers.dev](https://war-room.troche.workers.dev).** A match takes 15 minutes or less, on desktop or phone.
+
 *WAR ROOM is a fictional game. Factions, units and scenarios are invented and don't represent real nations or doctrine. Source code: [github.com/jose-troche/war-room](https://github.com/jose-troche/war-room).*
 
 **What's the firehose in your organization, and who is your ATLAS?** I'd like to hear in the comments.
@@ -196,6 +229,8 @@ In the article: the architecture, 5 lessons, and how the same pattern applies to
 cybersecurity, supply chain, finance, energy and more.
 
 What's the firehose in your organization?
+
+Play it: https://war-room.troche.workers.dev
 
 #AgenticAI #Leadership #AIStrategy
 -->
