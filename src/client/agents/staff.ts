@@ -1,6 +1,6 @@
 import { CATALOG, RULES } from '../../shared/catalog';
 import type { Domain, GameEvent, Side, UnitType, UnitView, View } from '../../shared/types';
-import { aaThreatsAt, buySuggestion, counterTo, reinforceNode } from './coa';
+import { aaThreatsAt, buySuggestion, counterTo, nodeActions } from './coa';
 import { dur, faction, kmBetween, typeLabel, where } from './text';
 import type { AgentId, Report, Severity, SuggestedAction } from './types';
 
@@ -247,25 +247,25 @@ export class StaffRoom {
         if (!node) return;
         const held = v.nodes.filter((n) => n.owner === e.side).length;
         if (ours) R(node.kind === 'land' ? 'bulwark' : 'trident', 'high', `node:${node.id}`, `${node.name} secured. We hold ${held}/${v.nodes.length}${held >= RULES.majorityNodes ? ' — majority bonus active' : ''}.`, { lat: node.lat, lon: node.lon, nodeId: node.id, weight: 1.6 });
-        else R(node.kind === 'land' ? 'bulwark' : 'trident', held >= RULES.majorityNodes ? 'critical' : 'high', `node:${node.id}`, `${faction(e.side!)} took ${node.name}. They hold ${held}/${v.nodes.length}${held >= RULES.majorityNodes ? ' and earn the majority bonus' : ''}.`, { lat: node.lat, lon: node.lon, nodeId: node.id, actions: reinforceNode(v, node), weight: 1.6 });
+        else R(node.kind === 'land' ? 'bulwark' : 'trident', held >= RULES.majorityNodes ? 'critical' : 'high', `node:${node.id}`, `${faction(e.side!)} took ${node.name}. They hold ${held}/${v.nodes.length}${held >= RULES.majorityNodes ? ' and earn the majority bonus' : ''}.`, { lat: node.lat, lon: node.lon, nodeId: node.id, actions: nodeActions(v, node), weight: 1.6 });
         return;
       }
       case 'node_lost': {
         if (!node || e.side !== me) return;
-        R(node.kind === 'land' ? 'bulwark' : 'trident', 'critical', `node:${node.id}`, `We lost ${node.name}. Enemy forces control the zone.`, { lat: node.lat, lon: node.lon, nodeId: node.id, actions: reinforceNode(v, node), weight: 1.6 });
+        R(node.kind === 'land' ? 'bulwark' : 'trident', 'critical', `node:${node.id}`, `We lost ${node.name}. Enemy forces control the zone.`, { lat: node.lat, lon: node.lon, nodeId: node.id, actions: nodeActions(v, node), weight: 1.6 });
         return;
       }
       case 'contested': {
         if (!node) return;
         const mineHeld = node.owner === me;
-        R(node.kind === 'land' ? 'bulwark' : 'trident', mineHeld ? 'high' : 'medium', `node:${node.id}`, `${node.name} contested — both sides in the zone${mineHeld ? '; our hold is at risk' : ''}.`, { lat: node.lat, lon: node.lon, nodeId: node.id, actions: reinforceNode(v, node), weight: 1.4 });
+        R(node.kind === 'land' ? 'bulwark' : 'trident', mineHeld ? 'high' : 'medium', `node:${node.id}`, `${node.name} contested — both sides in the zone${mineHeld ? '; our hold is at risk' : ''}.`, { lat: node.lat, lon: node.lon, nodeId: node.id, actions: nodeActions(v, node), weight: 1.4 });
         return;
       }
       case 'capturing': {
         if (!node) return;
         const pct = Math.round(Math.abs(e.value ?? 0));
         if (ours) R(node.kind === 'land' ? 'bulwark' : 'trident', 'low', `node:${node.id}`, `Taking ${node.short}: control ${pct}%.`, { lat: node.lat, lon: node.lon, nodeId: node.id });
-        else R(node.kind === 'land' ? 'bulwark' : 'trident', node.owner === me ? 'critical' : 'high', `node:${node.id}`, `${faction(e.side!)} is taking ${node.short} (${pct}%).`, { lat: node.lat, lon: node.lon, nodeId: node.id, actions: reinforceNode(v, node), weight: 1.5 });
+        else R(node.kind === 'land' ? 'bulwark' : 'trident', node.owner === me ? 'critical' : 'high', `node:${node.id}`, `${faction(e.side!)} is taking ${node.short} (${pct}%).`, { lat: node.lat, lon: node.lon, nodeId: node.id, actions: nodeActions(v, node), weight: 1.5 });
         return;
       }
       case 'bingo':

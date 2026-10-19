@@ -5,6 +5,7 @@ import { CATALOG } from '../../shared/catalog';
 import { speak } from '../voice';
 import { Atlas } from './atlas';
 import { StaffRoom } from './staff';
+import { resetPlanner } from './coa';
 import type { BriefItem, Report } from './types';
 
 const TRAFFIC_MAX = 300;
@@ -19,6 +20,7 @@ export class AgentRunner {
   reset() {
     this.staff = new StaffRoom();
     this.atlas = new Atlas();
+    resetPlanner();
     this.prev = null;
     this.trafficBuf = [];
     brief.value = [];

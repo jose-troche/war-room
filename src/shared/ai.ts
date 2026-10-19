@@ -8,9 +8,10 @@ import { Rng } from './rng';
 export type Difficulty = 'recruit' | 'veteran' | 'elite';
 
 export const DIFFICULTY: Record<Difficulty, { label: string; interval: number; reserve: number; aggression: number; cpMult: number; blurb: string }> = {
-  recruit: { label: 'Recruit', interval: 10, reserve: 400, aggression: 0.35, cpMult: 0.8, blurb: 'Slow, cautious opponent. Learn the ropes.' },
-  veteran: { label: 'Veteran', interval: 5, reserve: 140, aggression: 0.8, cpMult: 1, blurb: 'Competent and balanced.' },
-  elite: { label: 'Elite', interval: 2.5, reserve: 0, aggression: 1, cpMult: 1.25, blurb: 'Fast, coordinated, better logistics, hunts your satellites.' },
+  // Humans act on a handful of things at a time; lower levels give the machine slower reactions and thinner logistics.
+  recruit: { label: 'Recruit', interval: 15, reserve: 500, aggression: 0.25, cpMult: 0.5, blurb: 'Slow, cautious opponent. Learn the ropes.' },
+  veteran: { label: 'Veteran', interval: 7, reserve: 200, aggression: 0.7, cpMult: 0.8, blurb: 'Competent and balanced.' },
+  elite: { label: 'Elite', interval: 3, reserve: 40, aggression: 1, cpMult: 1, blurb: 'Full-strength machine: fast, coordinated, hunts your satellites.' },
 };
 
 const SURFACE: UnitType[] = ['destroyer', 'carrier'];
@@ -27,10 +28,13 @@ export class AiCommander {
 
   constructor(public side: Side, public difficulty: Difficulty, seed = 1) {
     this.rng = new Rng(seed ^ 0x9e3779b9);
+    // gentler levels give the human a moment to read the board before the first moves
+    this.nextAt = { recruit: 25, veteran: 8, elite: 2 }[difficulty];
   }
 
-  update(v: View, issue: (cmd: Command) => void) {
-    if (v.ended || v.t < this.nextAt) return;
+  /** Plans and issues commands when its reaction interval has elapsed. Returns true if it ran. */
+  update(v: View, issue: (cmd: Command) => void): boolean {
+    if (v.ended || v.t < this.nextAt) return false;
     const cfg = DIFFICULTY[this.difficulty];
     this.nextAt = v.t + cfg.interval * this.rng.range(0.8, 1.2);
     const me = this.side;
@@ -38,6 +42,14 @@ export class AiCommander {
     const enemies = v.units.filter((u) => u.side !== me);
     const ids = new Set(mine.map((u) => u.id));
     for (const id of [...this.assign.keys()]) if (!ids.has(id)) this.assign.delete(id);
+    // infer assignments from what units are actually doing (robust to orders we never saw issued)
+    for (const u of mine) {
+      if (this.assign.has(u.id) || !u.type || !CATALOG[u.type].captures) continue;
+      const m = u.mission;
+      const p = m.kind === 'move' || m.kind === 'patrol' ? m : u;
+      const n = v.nodes.find((x) => (x.kind === 'both' || x.kind === CATALOG[u.type!].captures) && distKm(p.lat, p.lon, x.lat, x.lon) < x.radiusKm * 1.6);
+      if (n) this.assign.set(u.id, n.id);
+    }
 
     const nodeValue = (n: StrategicNode) => {
       let val = n.owner === me ? 4 : n.owner ? 12 : 10;
@@ -238,6 +250,7 @@ export class AiCommander {
 
     /* ---------- requisition ---------- */
     this.requisition(v, mine, enemies, myBases, issue);
+    return true;
   }
 
   private requisition(v: View, mine: UnitView[], enemies: UnitView[], bases: Base[], issue: (c: Command) => void) {

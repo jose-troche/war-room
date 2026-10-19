@@ -1,7 +1,8 @@
+import { AiCommander } from '../../shared/ai';
 import { CATALOG, RULES } from '../../shared/catalog';
 import { NODE_LAND_POINT } from '../../shared/scenario';
-import type { Base, StrategicNode, TargetClass, UnitType, UnitView, View } from '../../shared/types';
-import { dur, kmBetween } from './text';
+import type { Base, Command, Side, StrategicNode, TargetClass, UnitType, UnitView, View } from '../../shared/types';
+import { dur, kmBetween, nearestNode } from './text';
 import type { SuggestedAction } from './types';
 
 /**
@@ -19,7 +20,8 @@ export function homeOf(v: View, u: UnitView): { lat: number; lon: number } {
 export function available(u: UnitView): boolean {
   if (u.state === 'building' || u.domain === 'space') return false;
   if (isAirLike(u)) return (u.state === 'ready' && u.mission.kind === 'hold') || u.mission.kind === 'patrol' || u.state === 'rearming';
-  return u.order.kind !== 'attack';
+  // ships and ground forces already under way keep their tasking — re-tasking them causes ping-pong
+  return u.order.kind !== 'attack' && u.path.length === 0;
 }
 
 /** Seconds for `u` to reach (lat,lon); Infinity when out of reach. */
@@ -180,24 +182,135 @@ export function recommendations(v: View): Recommendation[] {
     }
   }
 
-  // aircraft parked in harm's way
-  for (const u of v.units) {
-    if (u.side !== me || !isAirLike(u) || u.state === 'ready' || u.state === 'rearming' || u.state === 'rtb') continue;
-    const th = aaThreatsAt(v, u.lat, u.lon);
-    if (th.length && u.type !== 'bomber') {
-      recs.push({
-        score: 58, text: `${u.name} is inside ${th[0].identified ? th[0].name : 'enemy'} air defenses.`,
-        actions: [{ label: `Pull ${u.name} back`, cmd: { type: 'order', unitIds: [u.id], order: { kind: 'rtb' } }, describe: `${u.name} RTB` }],
-        lat: u.lat, lon: u.lon,
+  // the planning cell's coherent plan comes first; hand-built node advice only fills gaps
+  const plan = planRecommendations(v);
+  const planned = new Set(plan.map((r) => (r.lat !== undefined ? nearestNode(v, r.lat, r.lon!, 900)?.id : undefined)).filter(Boolean));
+  const keep = recs.filter((r) => {
+    const n = r.lat !== undefined ? nearestNode(v, r.lat, r.lon!, 600) : null;
+    return !(n && planned.has(n.id) && /^(Hold|Take|Retake) /.test(r.text));
+  });
+  recs.length = 0;
+  recs.push(...keep);
+  for (const r of plan) if (!r.text.startsWith('Reinforce:')) r.score += 30;
+  recs.push(...plan);
+
+  // spending advice ranks below operations unless the bank is getting large
+  const buy = recs.some((r) => r.text.startsWith('Reinforce:')) ? null : buySuggestion(v);
+  if (buy) recs.push({ score: 20 + Math.min(40, Math.max(0, v.cp - 300) / 8), text: buy.why, actions: [buy.action] });
+
+  if (myHeld < 2 && !recs.length) recs.push({ score: 5, text: 'Concentrate surface ships on the nearest neutral chokepoint.', actions: [] });
+  // never offer the same unit twice across the list
+  const used = new Set<string>();
+  const out: Recommendation[] = [];
+  for (const r of recs.sort((a, b) => b.score - a.score)) {
+    r.actions = r.actions.filter((a) => {
+      const ids = [a.cmd, ...(a.cmds ?? [])].flatMap((c) => (c && c.type === 'order' ? c.unitIds : []));
+      if (ids.some((id) => used.has(id))) return false;
+      ids.forEach((id) => used.add(id));
+      return true;
+    });
+    if (r.actions.length || !recs.some((x) => x.actions.length)) out.push(r);
+  }
+  return out;
+}
+
+/* ------------------------------------------------------------------ planning cell */
+
+/**
+ * ATLAS's planning cell: a shadow commander for our side (the same planner the machine
+ * opponent uses) whose intended moves become one-click recommendations.
+ */
+const planners: Partial<Record<Side, { t: number; plan: Command[] }>> = {};
+const PLAN_EVERY = 2.5;
+
+export function currentPlan(v: View): Command[] {
+  let p = planners[v.side];
+  if (!p || v.t < p.t) p = planners[v.side] = { t: -99, plan: [] };
+  if (v.t - p.t >= PLAN_EVERY) {
+    // a fresh, memory-less planner each cycle: it plans from what units are actually doing,
+    // so advice the commander ignored is simply proposed again
+    const fresh: Command[] = [];
+    const ai = new AiCommander(v.side, 'elite', 7);
+    if (ai.update({ ...v, t: Math.max(v.t, 2) }, (c) => fresh.push(c))) p.plan = fresh;
+    p.t = v.t;
+  }
+  // drop planned orders that are already in progress
+  p.plan = p.plan.filter((c) => {
+    if (c.type !== 'order') return v.cp >= CATALOG[c.unitType].cost;
+    return c.unitIds.some((id) => {
+      const u = v.units.find((x) => x.id === id);
+      if (!u) return false;
+      const o = c.order;
+      if (o.kind === 'attack') return u.order.kind !== 'attack' || u.order.targetId !== o.targetId;
+      if (o.kind === 'move' || o.kind === 'patrol') {
+        const m = u.mission;
+        return !((m.kind === 'move' || m.kind === 'patrol') && kmBetween(m.lat, m.lon, o.lat, o.lon) < 400);
+      }
+      return true;
+    });
+  });
+  return p.plan;
+}
+
+function planRecommendations(v: View): Recommendation[] {
+  const out: Recommendation[] = [];
+  for (const c of currentPlan(v)) {
+    if (c.type === 'buy') {
+      const spec = CATALOG[c.unitType];
+      const b = v.bases.find((x) => x.id === c.baseId);
+      if (!b || v.cp < spec.cost + 120 || out.some((r) => r.text.startsWith('Reinforce:'))) continue;
+      // only reinforce where it matters: within reach of a contested or enemy-held objective
+      if (!v.nodes.some((n) => n.owner !== v.side && kmBetween(n.lat, n.lon, b.lat, b.lon) < 4500)) continue;
+      out.push({ score: 8, text: `Reinforce: deploy a ${spec.label} at ${b.name}.`, actions: [{ label: `Deploy ${spec.label} · ${spec.cost} CP`, cmd: c, describe: `Requisitioned ${spec.label} at ${b.name}` }], lat: b.lat, lon: b.lon });
+      continue;
+    }
+    const units = c.unitIds.map((id) => v.units.find((u) => u.id === id)).filter((u): u is UnitView => !!u);
+    if (!units.length) continue;
+    const names = units.map((u) => u.name).join(' + ');
+    const o = c.order;
+    if (o.kind === 'attack') {
+      const t = v.units.find((x) => x.id === o.targetId) ?? v.bases.find((x) => x.id === o.targetId);
+      if (!t) continue;
+      const tName = 'domain' in t ? (t.identified ? t.name : 'contact') : t.name;
+      const isBase = !('domain' in t);
+      const sat = 'domain' in t && t.domain === 'space';
+      const eta = sat ? 0 : Math.max(...units.map((u) => etaTo(v, u, t.lat, t.lon, (CATALOG[u.type!].weapon?.rangeKm ?? 0) * 0.8)));
+      const n = nearestNode(v, t.lat, t.lon, 1500);
+      out.push({
+        score: sat ? 55 : isBase ? 50 : 'type' in t && t.type === 'carrier' ? 70 : 62,
+        text: sat ? `Shoot down ${tName} while it is overhead.` : `Strike ${tName}${n ? ` near ${n.short}` : ''}.`,
+        actions: [{ label: `${sat ? 'Launch' : 'Strike with'} ${names}${isFinite(eta) && eta > 1 ? ` · ETA ${dur(eta)}` : ''}`, cmd: c, describe: `${names} → attack ${tName}` }],
+        lat: t.lat, lon: t.lon,
+      });
+    } else if (o.kind === 'move' || o.kind === 'patrol') {
+      const n = nearestNode(v, o.lat, o.lon, 900);
+      const air = units.every((u) => u.domain === 'air' || u.domain === 'drone');
+      const eta = Math.max(...units.map((u) => etaTo(v, u, o.lat, o.lon)));
+      const where = n ? n.short : 'the area';
+      const recon = units.every((u) => u.type === 'recon_drone' || u.type === 'awacs');
+      out.push({
+        score: air ? (recon ? 30 : 46) : n && n.owner !== v.side ? 60 : 52,
+        text: air ? (recon ? `Put eyes on ${where}.` : `Air cover over ${where}.`) : `${n && n.owner && n.owner !== v.side ? 'Retake' : n && n.owner === v.side ? 'Hold' : 'Take'} ${where} with ${names}.`,
+        actions: [{ label: `${air ? (recon ? 'Scout' : 'Patrol') : 'Send'} ${names}${isFinite(eta) ? ` · ETA ${dur(eta)}` : ''}`, cmd: c, describe: `${names} → ${where}` }],
+        lat: o.lat, lon: o.lon,
       });
     }
   }
+  return out;
+}
 
-  const buy = buySuggestion(v);
-  if (buy) recs.push({ score: 35 + Math.min(30, (v.cp - 300) / 10), text: buy.why, actions: [buy.action] });
+/** Plan actions that concern a node (orders into its zone), falling back to nearest capable units. */
+export function nodeActions(v: View, n: StrategicNode, max = 2): SuggestedAction[] {
+  const fromPlan = planRecommendations(v)
+    .filter((r) => r.lat !== undefined && kmBetween(r.lat, r.lon!, n.lat, n.lon) < n.radiusKm * 2.5)
+    .flatMap((r) => r.actions);
+  return (fromPlan.length ? fromPlan : reinforceNode(v, n, max)).slice(0, max);
+}
 
-  if (myHeld < 2 && !recs.length) recs.push({ score: 20, text: 'Concentrate surface ships on the nearest neutral chokepoint.', actions: [] });
-  return recs.sort((a, b) => b.score - a.score);
+/** Forget planning state (new match). */
+export function resetPlanner() {
+  delete planners.blue;
+  delete planners.red;
 }
 
 /** What to requisition with available CP. */

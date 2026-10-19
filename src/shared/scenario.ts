@@ -84,6 +84,7 @@ const OOB: Record<Side, UnitDef[]> = {
     ['destroyer', 'DDG LANCE', 35.0, -20.0],
     ['destroyer', 'DDG PIKE', 51.0, -163.0],
     ['destroyer', 'DDG GLAIVE', 34.0, 24.0],
+    ['destroyer', 'DDG SPEAR', 31.0, -121.0],
     ['submarine', 'SSN NAUTILUS', 50.0, -30.0],
     ['submarine', 'SSN SCORPION', 30.0, -140.0],
     ['armor', '1st ARMORED', -22.5, 17.5],
