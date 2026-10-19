@@ -208,29 +208,3 @@ That's the job description for leaders in the agentic era, in any industry.
 **What's the firehose in your organization, and who is your ATLAS?** I'd like to hear in the comments.
 
 #AgenticAI #AI #Leadership #DecisionMaking #DigitalTransformation #Operations #AIStrategy #MultiAgentSystems #HumanInTheLoop
-
----
-
-<!--
-Suggested LinkedIn post to share the article:
-
-Your staff reads 500 reports a minute. You read five.
-
-I built a real-time war game to show what agentic AI really looks like in operations:
-• 7 specialist AI agents report everything they see
-• 1 "Chief of Staff" agent filters 1,284 reports down to 37
-• Every item comes with a one-click recommended action
-• The human stays in command
-
-The biggest surprise? None of the agents are LLMs. A language model only answers the
-open-ended questions, and it's tightly grounded.
-
-In the article: the architecture, 5 lessons, and how the same pattern applies to healthcare,
-cybersecurity, supply chain, finance, energy and more.
-
-What's the firehose in your organization?
-
-Play it: https://war-room.troche.workers.dev
-
-#AgenticAI #Leadership #AIStrategy
--->

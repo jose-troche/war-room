@@ -1,0 +1,20 @@
+Your staff reads 500 reports per minute. To make a decision, you need only the five most critical ones at that moment.
+
+Throughout my career, I've had the privilege of working with remarkable people. Some of them told me about a massive simulation project they had worked on: a large room with gigantic screens simulating realistic military conflicts. They described the technical and human challenges of facing vast amounts of information produced at the same time by many different sources.
+
+Inspired by that scenario, I built a real-time war game to show what agentic AI looks like in a similar environment:
+• 7 specialist AI agents report everything they see
+• 1 "Chief of Staff" agent filters 1,284 reports down to 37
+• Every item comes with a one-click recommended action
+• The human stays in command
+
+The biggest surprise? None of the agents are LLMs. A language model only answers the open-ended questions, and it's tightly grounded.
+
+In the article (link at the bottom) you'll find the architecture, 5 lessons, and how the same pattern applies to healthcare, cybersecurity, supply chain, finance, energy and more.
+
+What's the firehose in your organization?
+
+▶ Play it: https://war-room.troche.workers.dev
+💻 Code: https://github.com/jose-troche/war-room
+
+#AgenticAI #Leadership #AIStrategy
