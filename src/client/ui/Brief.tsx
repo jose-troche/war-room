@@ -5,6 +5,8 @@ import { clock } from '../agents/text';
 import { agentMeta, SEVERITY_ICON, SEVERITY_LABEL, type BriefItem } from '../agents/types';
 import { mapCtl } from '../map/controller';
 import { runAction } from './common';
+import { Abbr, Gloss } from './Gloss';
+import { glossTitle } from '../glossary';
 
 function ago(t: number, now: number) {
   const s = Math.max(0, Math.round(now - t));
@@ -13,6 +15,7 @@ function ago(t: number, now: number) {
 
 export function BriefCard({ item, compact = false }: { item: BriefItem; compact?: boolean }) {
   const v = view.value;
+  const [done, setDone] = useState<string[]>([]);
   const isNew = performance.now() - item.shownAt < 6000;
   const focus = () => {
     if (item.lat !== undefined) mapCtl.flyTo(item.lat, item.lon!, 4);
@@ -21,7 +24,7 @@ export function BriefCard({ item, compact = false }: { item: BriefItem; compact?
   return (
     <article class={`card ${item.severity} ${isNew ? 'new' : ''}`} onClick={focus} aria-label={`${SEVERITY_LABEL[item.severity]} from ${agentMeta(item.agent).callsign}: ${item.text}`}>
       <div class="meta">
-        <span class="sev">{SEVERITY_ICON[item.severity]} {SEVERITY_LABEL[item.severity]}</span>
+        <span class="sev"><Abbr term={SEVERITY_LABEL[item.severity]}>{SEVERITY_ICON[item.severity]} {SEVERITY_LABEL[item.severity]}</Abbr></span>
         <span>· {agentMeta(item.agent).callsign}</span>
         {item.count > 1 && <span class="count">×{item.count}</span>}
         <span>· {v ? ago(item.t, v.t) : ''}</span>
@@ -29,12 +32,20 @@ export function BriefCard({ item, compact = false }: { item: BriefItem; compact?
           <button class="x" aria-label="Dismiss" title="Dismiss" onClick={(e) => { e.stopPropagation(); agents.dismiss(item.key); }}>×</button>
         )}
       </div>
-      <div class="txt">{item.text}</div>
+      <div class="txt"><Gloss text={item.text} /></div>
       {!!item.actions?.length && (
         <div class="acts">
-          {item.actions.slice(0, 2).map((a) => (
-            <button class="btn act sm" key={a.label} onClick={(e) => { e.stopPropagation(); runAction(a, item.key); }}>{a.label}</button>
-          ))}
+          {item.actions.slice(0, 3).map((a, _i, all) => {
+            const isDone = done.includes(a.label);
+            return (
+              <button class="btn act sm" key={a.label} disabled={isDone} title={glossTitle(a.label)} onClick={(e) => {
+                e.stopPropagation();
+                const executable = all.filter((x) => x.cmd || x.cmds);
+                const last = executable.filter((x) => !done.includes(x.label)).length <= 1;
+                if (runAction(a, last ? item.key : undefined) && (a.cmd || a.cmds)) setDone([...done, a.label]);
+              }}>{isDone ? `✓ ${a.label}` : a.label}</button>
+            );
+          })}
         </div>
       )}
     </article>
@@ -58,13 +69,13 @@ export function SitrepBlock() {
   return (
     <section class="sitrep" aria-label="Situation report">
       <header>
-        <b>SITREP · {clock(s.t)}</b>
+        <b><Abbr term="SITREP" /> · <Gloss text={clock(s.t)} /></b>
         <span>
           <span class={`trend ${s.trend}`}>{s.trend === 'winning' ? '▲ WINNING' : s.trend === 'losing' ? '▼ LOSING' : '◆ EVEN'}</span>
           <button class="x" style={{ border: 0, background: 'transparent', color: 'var(--ink-3)', cursor: 'pointer', marginLeft: 6 }} onClick={() => setOpen(!open)} aria-label={open ? 'Collapse SITREP' : 'Expand SITREP'}>{open ? '–' : '+'}</button>
         </span>
       </header>
-      {open && s.lines.map((l) => <p key={l}>{l}</p>)}
+      {open && s.lines.map((l) => <p key={l}><Gloss text={l} /></p>)}
     </section>
   );
 }
@@ -110,7 +121,7 @@ export function BriefPanel() {
         <SitrepBlock />
         <BriefList />
         {v && !v.ended && (
-          <button class="btn sm ghost" style={{ alignSelf: 'flex-start' }} onClick={() => agents.requestSitrep(v)}>↻ Request SITREP</button>
+          <button class="btn sm ghost" style={{ alignSelf: 'flex-start' }} onClick={() => agents.requestSitrep(v)}>↻ Request <Abbr term="SITREP" /></button>
         )}
       </div>
     </>

@@ -96,6 +96,8 @@ export function reinforceNode(v: View, n: StrategicNode, max = 2): SuggestedActi
     if (!cap || (n.kind !== 'both' && cap !== n.kind)) continue;
     const near = kmBetween(u.lat, u.lon, n.lat, n.lon) < n.radiusKm;
     if (near) continue;
+    const m = u.mission;
+    if ((m.kind === 'move' || m.kind === 'patrol') && kmBetween(m.lat, m.lon, n.lat, n.lon) < n.radiusKm * 1.5) continue;
     const eta = etaTo(v, u, n.lat, n.lon);
     if (eta > 300) continue;
     cands.push({ u, eta });

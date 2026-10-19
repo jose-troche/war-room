@@ -324,7 +324,7 @@ button { font: inherit; color: inherit; }
 .obj.theirs { border-color: rgba(255, 77, 94, 0.55); }
 .obj.contested { border-color: var(--unknown); animation: pulseB 1.2s infinite; }
 @keyframes pulseB { 50% { box-shadow: 0 0 0 2px rgba(255, 197, 61, 0.25); } }
-.obj .top { display: flex; justify-content: space-between; align-items: center; font: 700 13px var(--display); letter-spacing: 0.06em; text-transform: uppercase; gap: 6px; }
+.obj .top { display: flex; justify-content: space-between; align-items: center; font: 700 12.5px var(--display); letter-spacing: 0.03em; text-transform: uppercase; gap: 6px; }
 .obj .top small { font: 700 10px var(--font); letter-spacing: 0.06em; color: var(--ink-3); }
 .obj .top span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .obj .own { width: 9px; height: 9px; border-radius: 50%; flex: none; }
@@ -457,3 +457,11 @@ button { font: inherit; color: inherit; }
   .app.mobile .attract-badge { top: max(10px, env(safe-area-inset-top)); }
   .app.landing.mobile .map-ctrls { display: none; }
 }
+
+/* glossary */
+abbr[title] { text-decoration: underline dotted rgba(180, 195, 214, 0.55); text-underline-offset: 2px; cursor: help; }
+abbr[title]:focus-visible { outline: 1px solid var(--accent); }
+.glossary { display: grid; gap: 4px; margin: 8px 0 12px; max-height: 50vh; overflow: auto; font-size: 13px; }
+.glossary > div { display: grid; grid-template-columns: 92px 1fr; gap: 10px; padding: 5px 8px; border-radius: 6px; background: var(--panel-2); }
+.glossary dt { font: 700 13px var(--display); letter-spacing: 0.06em; color: var(--accent); }
+.glossary dd { margin: 0; color: var(--ink-2); }

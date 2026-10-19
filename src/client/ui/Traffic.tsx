@@ -4,6 +4,7 @@ import { AGENTS, agentMeta, SEVERITY_LABEL, type Severity } from '../agents/type
 import { clock } from '../agents/text';
 import { mapCtl } from '../map/controller';
 import { trafficFilter } from './Forces';
+import { Gloss } from './Gloss';
 
 const SEVS: (Severity | 'all')[] = ['all', 'critical', 'high', 'medium', 'low', 'info'];
 
@@ -42,17 +43,13 @@ export function TrafficDrawer() {
             if (r.lat !== undefined) mapCtl.flyTo(r.lat, r.lon!, 4);
             if (r.unitIds) highlights.value = { ids: r.unitIds, until: performance.now() + 4000 };
           }}>
-            <span class="tm">{clock(r.t)}</span>
+            <span class="tm"><Gloss text={clock(r.t)} /></span>
             <span class="ag">{agentMeta(r.agent).callsign}</span>
-            <span class="tx">{r.text}</span>
+            <span class="tx"><Gloss text={r.text} /></span>
           </div>
         ))}
         {!list.length && <div class="empty" style={{ margin: 10 }}>No traffic yet.</div>}
       </div>
     </aside>
   );
-}
-
-export function Toast() {
-  return null;
 }

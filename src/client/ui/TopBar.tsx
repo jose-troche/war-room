@@ -6,6 +6,7 @@ import { clock, mmss } from '../agents/text';
 import { session } from '../session/session';
 import { isMobile, mode, paused, settings, speed, tourStep, updateSettings, view } from '../store';
 import { canSpeak, stopSpeaking } from '../voice';
+import { Abbr, Gloss } from './Gloss';
 
 export function togglePause() {
   const s = session();
@@ -34,7 +35,7 @@ export function VpBar({ compact = false }: { compact?: boolean }) {
     <div class="vp" title={`First to ${RULES.vpTarget} VP wins. ${FACTIONS[me].short}: ${rate(me)}, ${FACTIONS[enemy].short}: ${rate(enemy)}`} data-tour="score">
       <div class="labels">
         <span class="blue">{compact ? 'AEGIS' : 'AEGIS'} {Math.floor(b)}</span>
-        {!compact && <span class="mid">{rate('blue')} · first to {RULES.vpTarget} · {rate('red')}</span>}
+        {compact ? <span class="mid"><Abbr term="VP" /></span> : <span class="mid">{rate('blue')} · first to {RULES.vpTarget} <Abbr term="VP" /> · {rate('red')}</span>}
         <span class="red">{Math.floor(r)} HYDRA</span>
       </div>
       <div class="bar" role="meter" aria-valuemin={0} aria-valuemax={RULES.vpTarget} aria-valuenow={Math.floor(v.vp[me])} aria-label="Victory points">
@@ -79,11 +80,11 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
         <NodePips />
       </div>
       <div class="stat" title="Match clock (game time) and real time remaining">
-        <span class="k">{clock(v.t)}</span>
+        <span class="k"><Gloss text={clock(v.t)} /></span>
         <span class="v">{mmss(left)}</span>
       </div>
       <div class="stat" title="Command Points: spend them on reinforcements">
-        <span class="k">CP +{v.cpRate}/s</span>
+        <span class="k"><Abbr term="CP" /> +{v.cpRate}/s</span>
         <span class="v">{Math.floor(v.cp)}</span>
       </div>
       <div class="ctrls">
@@ -121,7 +122,7 @@ export function MobileTop({ onMenu }: { onMenu: () => void }) {
       <VpBar compact />
       <div class="clock">
         <div>{mmss(left)}</div>
-        <div class="muted">CP {Math.floor(v.cp)}</div>
+        <div class="muted"><Abbr term="CP" /> {Math.floor(v.cp)}</div>
       </div>
       {mode.value === 'solo' && (
         <button class={`icon-btn ${paused.value ? 'on' : ''}`} onClick={togglePause} aria-label={paused.value ? 'Resume' : 'Pause'}>{paused.value ? '▶' : '❚❚'}</button>

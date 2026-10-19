@@ -10,6 +10,8 @@ import { mapCtl } from '../map/controller';
 import { COLORS, glyphFor, GLYPHS, sideColor } from '../map/icons';
 import { baseline, clickMode, panel, selection, staffStats, trafficOpen, view, type Panel } from '../store';
 import { GROUP_META, hpColor, Icon, runAction, stateLabel, statusLight } from './common';
+import { Abbr, Gloss } from './Gloss';
+import { glossTitle } from '../glossary';
 
 const SEV_LIGHT: Record<string, string> = { critical: 'bad', high: 'warn', medium: 'warn', low: 'ok', info: 'ok' };
 export const trafficFilter = { agent: null as string | null };
@@ -137,7 +139,7 @@ function Overview({ v }: { v: View }) {
             <button class="staff-row" key={a.id} onClick={() => { trafficFilter.agent = a.id; trafficOpen.value = true; }} title={`${a.role}: ${a.watches}. Click for raw traffic.`}>
               <span class={`light ${recent ? SEV_LIGHT[s.worst] : 'idle'}`} />
               <span class="cs">{a.callsign}</span>
-              <span class="role">{a.role}</span>
+              <span class="role"><Gloss text={a.role} /></span>
               <span class="n">{s?.n ?? 0}</span>
             </button>
           );
@@ -156,8 +158,8 @@ function UnitRow({ u }: { u: UnitView }) {
     <button class={`urow ${sel ? 'sel' : ''}`} onClick={(e) => { selectUnits([u.id], e.shiftKey); const p = u; mapCtl.flyTo(p.lat, p.lon); }}>
       <Icon d={glyphFor(u.type, u.domain)} size={20} color={sideColor(u.side)} />
       <span style={{ minWidth: 0 }}>
-        <div class="nm">{u.name}</div>
-        <div class="st"><span class={`light ${statusLight(u)}`} /> {stateLabel(u)}</div>
+        <div class="nm"><Gloss text={u.name} /></div>
+        <div class="st"><span class={`light ${statusLight(u)}`} /> <Gloss text={stateLabel(u)} /></div>
       </span>
       <span class="hp" title={`${Math.round(f * 100)}%`}><i style={{ width: `${f * 100}%`, background: hpColor(f) }} /></span>
     </button>
@@ -229,8 +231,8 @@ function UnitDetail({ v, id }: { v: View; id: string }) {
       <div class="hero">
         <div class="ic"><Icon d={glyphFor(u.type, u.domain)} size={30} color={COLORS.blue} /></div>
         <div>
-          <h3>{u.name}</h3>
-          <div class="t">{spec.label} · <span class={`light ${statusLight(u)}`} /> {stateLabel(u)}</div>
+          <h3><Gloss text={u.name} /></h3>
+          <div class="t"><Gloss text={spec.label} /> · <span class={`light ${statusLight(u)}`} /> <Gloss text={stateLabel(u)} /></div>
         </div>
       </div>
       <div>
@@ -252,10 +254,10 @@ function UnitDetail({ v, id }: { v: View; id: string }) {
         <dt>Sensor</dt><dd>{spec.sensorKm ? `${spec.sensorKm.toLocaleString('en-US')} km` : '—'}</dd>
         {home && <><dt>Home</dt><dd>{home.name}</dd></>}
         {target && <><dt>Target</dt><dd>{'domain' in target ? (target.identified ? target.name : 'contact') : target.name}</dd></>}
-        {eta !== null && isFinite(eta) && <><dt>ETA</dt><dd>{dur(eta)}</dd></>}
+        {eta !== null && isFinite(eta) && <><dt><Abbr term="ETA" /></dt><dd>{dur(eta)}</dd></>}
         {u.kills > 0 && <><dt>Kills</dt><dd>{u.kills}</dd></>}
       </dl>
-      <div class="blurb">{spec.blurb}</div>
+      <div class="blurb"><Gloss text={spec.blurb} /></div>
       {u.state !== 'building' && (
         <div class="actions">
           {canMove && <button class="btn" onClick={() => pickMode(air ? 'patrol' : 'smart')}>{air ? 'Patrol…' : 'Move…'}</button>}
@@ -270,7 +272,7 @@ function UnitDetail({ v, id }: { v: View; id: string }) {
           <div class="sec-title" style={{ marginBottom: 6 }}>Targets in reach</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {targets.map(({ e, eta: t }) => (
-              <button key={e.id} class="btn act sm" style={{ justifyContent: 'space-between' }} onClick={() => orderUnits([u.id], { kind: 'attack', targetId: e.id }, `${u.name} → attack ${e.identified ? e.name : 'contact'}`)}>
+              <button key={e.id} class="btn act sm" title={glossTitle('ETA')} style={{ justifyContent: 'space-between' }} onClick={() => orderUnits([u.id], { kind: 'attack', targetId: e.id }, `${u.name} → attack ${e.identified ? e.name : 'contact'}`)}>
                 <span>{u.type === 'asat' ? 'Launch at' : 'Attack'} {e.identified ? e.name : `unidentified ${e.domain}`}</span>
                 <span class="muted">{t > 0 ? `ETA ${dur(t)}` : 'in range'}</span>
               </button>
@@ -313,7 +315,7 @@ function EnemyDetail({ v, u }: { v: View; u: UnitView }) {
         <div class="sec-title" style={{ marginBottom: 6 }}>Counter options</div>
         {acts.length ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            {acts.map((a) => <button key={a.label} class="btn act sm" onClick={() => runAction(a)}>{a.label}</button>)}
+            {acts.map((a) => <button key={a.label} class="btn act sm" title={glossTitle(a.label)} onClick={() => runAction(a)}>{a.label}</button>)}
           </div>
         ) : <div class="muted" style={{ fontSize: 12.5 }}>No available unit can engage it right now.</div>}
       </div>
@@ -433,14 +435,14 @@ function RequisitionGrid({ v, base }: { v: View; base: Base }) {
   const types = (Object.keys(CATALOG) as UnitType[]).filter((t) => CATALOG[t].spawnAt.includes(base.type));
   return (
     <div>
-      <div class="sec-title" style={{ marginBottom: 6 }}>Deploy here · {Math.floor(v.cp)} CP</div>
+      <div class="sec-title" style={{ marginBottom: 6 }}>Deploy here · {Math.floor(v.cp)} <Abbr term="CP" /></div>
       <div class="req-grid">
         {types.map((t) => {
           const s = CATALOG[t];
           return (
             <button key={t} class="req" disabled={v.cp < s.cost || base.disabled} onClick={() => issue({ type: 'buy', unitType: t, baseId: base.id }, `Requisitioned ${s.label} at ${base.name}`)} title={s.blurb}>
               <Icon d={GLYPHS[t]} size={22} color={COLORS.blue} />
-              <span>{s.label}<small>ready in {s.build}s</small></span>
+              <span>{s.label}<small>ready in {s.build}s · {s.cost} CP</small></span>
               <span class="c">{s.cost}</span>
             </button>
           );
@@ -455,11 +457,11 @@ function Requisition({ v }: { v: View }) {
   const bases = v.bases.filter((b) => b.side === v.side && !b.disabled);
   return (
     <div class="detail">
-      <div class="blurb">Spend Command Points to deploy reinforcements at a base. Income: +{v.cpRate} CP/s (2 base + 1 per node held).</div>
+      <div class="blurb">Spend Command Points (<Abbr term="CP" />) to deploy reinforcements at a base. Income: +{v.cpRate} <Abbr term="CP" />/s (2 base + 1 per node held).</div>
       {sugg && (
         <div>
           <div class="sec-title" style={{ marginBottom: 6 }}>QUARTERMASTER suggests</div>
-          <div class="muted" style={{ fontSize: 12.5, marginBottom: 6 }}>{sugg.why}</div>
+          <div class="muted" style={{ fontSize: 12.5, marginBottom: 6 }}><Gloss text={sugg.why} /></div>
           <button class="btn act sm" style={{ width: '100%' }} onClick={() => runAction(sugg.action)}>{sugg.action.label}</button>
         </div>
       )}

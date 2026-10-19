@@ -247,7 +247,7 @@ export class StaffRoom {
         if (!node) return;
         const held = v.nodes.filter((n) => n.owner === e.side).length;
         if (ours) R(node.kind === 'land' ? 'bulwark' : 'trident', 'high', `node:${node.id}`, `${node.name} secured. We hold ${held}/${v.nodes.length}${held >= RULES.majorityNodes ? ' — majority bonus active' : ''}.`, { lat: node.lat, lon: node.lon, nodeId: node.id, weight: 1.6 });
-        else R(node.kind === 'land' ? 'bulwark' : 'trident', 'critical', `node:${node.id}`, `${faction(e.side!)} took ${node.name}. They hold ${held}/${v.nodes.length}${held >= RULES.majorityNodes ? ' and earn the majority bonus' : ''}.`, { lat: node.lat, lon: node.lon, nodeId: node.id, actions: reinforceNode(v, node), weight: 1.6 });
+        else R(node.kind === 'land' ? 'bulwark' : 'trident', held >= RULES.majorityNodes ? 'critical' : 'high', `node:${node.id}`, `${faction(e.side!)} took ${node.name}. They hold ${held}/${v.nodes.length}${held >= RULES.majorityNodes ? ' and earn the majority bonus' : ''}.`, { lat: node.lat, lon: node.lon, nodeId: node.id, actions: reinforceNode(v, node), weight: 1.6 });
         return;
       }
       case 'node_lost': {

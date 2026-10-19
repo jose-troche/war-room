@@ -2,7 +2,7 @@ import { RULES } from '../../shared/catalog';
 import type { Side, View } from '../../shared/types';
 import { recommendations } from './coa';
 import { dur, faction } from './text';
-import type { BriefItem, Report, Severity, Sitrep } from './types';
+import type { BriefItem, Report, Severity, Sitrep, SuggestedAction } from './types';
 
 const SEV_WEIGHT: Record<Severity, number> = { critical: 100, high: 40, medium: 12, low: 3, info: 0.5 };
 const SEV_RANK: Record<Severity, number> = { critical: 4, high: 3, medium: 2, low: 1, info: 0 };
@@ -179,7 +179,7 @@ export class Atlas {
         out.push({
           id: -1, t: v.t, agent: 'atlas', severity: 'high', subject: 'opening',
           text: `Opening orders: seize ${list} before HYDRA does. We hold Panama; they hold Malacca.`,
-          actions: recs.map((r) => r.actions[0]).slice(0, 3), weight: 2,
+          actions: uniqueByUnit(recs.flatMap((r) => r.actions)).slice(0, 3), weight: 2,
         });
       }
       this.lastAdvice = v.t;
@@ -206,6 +206,17 @@ export class Atlas {
     this.sitrep = composeSitrep(v, this.items(v));
     return this.sitrep;
   }
+}
+
+/** One action per unit, so a card never offers the same ship for two jobs. */
+function uniqueByUnit(actions: SuggestedAction[]): SuggestedAction[] {
+  const used = new Set<string>();
+  return actions.filter((a) => {
+    const ids = [a.cmd, ...(a.cmds ?? [])].flatMap((c) => (c && c.type === 'order' ? c.unitIds : []));
+    if (ids.some((id) => used.has(id))) return false;
+    ids.forEach((id) => used.add(id));
+    return true;
+  });
 }
 
 export function projection(v: View): { text: string; trend: Sitrep['trend']; winner: Side | null; secs: number } {
@@ -235,7 +246,7 @@ function composeSitrep(v: View, items: BriefItem[]): Sitrep {
   const proj = projection(v);
   const lines: string[] = [];
   lines.push(`${faction(me)} ${Math.floor(v.vp[me])} vs ${faction(enemy)} ${Math.floor(v.vp[enemy])} VP · nodes ${held(me)}–${held(enemy)}. ${proj.text}`);
-  const threat = items.find((i) => i.severity === 'critical' || i.severity === 'high');
+  const threat = items.find((i) => i.agent !== 'atlas' && (i.severity === 'critical' || i.severity === 'high'));
   lines.push(threat ? `Main threat: ${threat.text}` : 'No immediate threats to our positions.');
   const rec = recommendations(v)[0];
   lines.push(rec ? `Recommend: ${rec.text}` : 'Recommend: hold positions and build CP.');

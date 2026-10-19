@@ -4,6 +4,7 @@ import { RULES } from '../../shared/catalog';
 import { FACTIONS } from '../../shared/scenario';
 import type { Side } from '../../shared/types';
 import { decisionLog } from '../actions';
+import { Abbr, GlossaryList } from './Gloss';
 import { clock, faction, mmss } from '../agents/text';
 import {
   counters, isMobile, mode, paused, pvp, settings, sheetSize, sheetTab, toast, tourStep, updateSettings, view,
@@ -64,6 +65,10 @@ export function HowToPlay({ onClose }: { onClose: () => void }) {
         <h2>HOW TO PLAY</h2>
         <p class="lead">You are the theater commander. Your AI staff watches everything; you decide.</p>
         <Objectives />
+        <details>
+          <summary class="sec-title" style={{ cursor: 'pointer', margin: '4px 0' }}>Glossary of terms & acronyms</summary>
+          <GlossaryList />
+        </details>
         <div class="row-btns"><button class="btn primary" onClick={onClose}>Got it</button></div>
       </div>
     </div>
@@ -73,8 +78,8 @@ export function HowToPlay({ onClose }: { onClose: () => void }) {
 function Objectives() {
   return (
     <div class="objectives-list">
-      <div class="o"><span class="n">1</span><div><b>CONTROL THE CHOKEPOINTS</b><p>Seven strategic nodes — Panama, Gibraltar, Suez, Hormuz, Malacca, Bering and the Cape Uplink. Ships capture sea nodes, ground forces capture land nodes. Each node you hold earns VP every second; hold 4+ for a 50% bonus. Holding Panama or Suez closes that canal to enemy ships.</p></div></div>
-      <div class="o"><span class="n">2</span><div><b>WIN THE WAR</b><p>First to <b>{RULES.vpTarget} VP</b> wins — or destroy the enemy HQ — or lead on VP when the 15:00 clock runs out.</p></div></div>
+      <div class="o"><span class="n">1</span><div><b>CONTROL THE CHOKEPOINTS</b><p>Seven strategic nodes — Panama, Gibraltar, Suez, Hormuz, Malacca, Bering and the Cape Uplink. Ships capture sea nodes, ground forces capture land nodes. Each node you hold earns Victory Points every second; hold 4+ for a 50% bonus. Holding Panama or Suez closes that canal to enemy ships.</p></div></div>
+      <div class="o"><span class="n">2</span><div><b>WIN THE WAR</b><p>First to <b>{RULES.vpTarget} <Abbr term="VP" /></b> (Victory Points) wins — or destroy the enemy <Abbr term="HQ" /> (headquarters) — or lead on <Abbr term="VP" /> when the 15:00 clock runs out.</p></div></div>
       <div class="o"><span class="n">3</span><div><b>TRUST YOUR STAFF</b><p>Seven staff agents report everything (air, sea, land, drones, space, intel, logistics). <b>ATLAS</b>, your Chief of Staff, surfaces only what needs a decision — with one-click recommended actions.</p></div></div>
       <div class="o"><span class="n">4</span><div><b>GIVE ORDERS</b><p>Select a unit, then click the map to move or click an enemy to attack. Or just ask ATLAS: <i>“send destroyers to Gibraltar”</i>, <i>“what threatens Panama?”</i> — typed or spoken.</p></div></div>
     </div>
@@ -225,7 +230,7 @@ export function AAR({ onRematch, onMenu }: { onRematch: () => void; onMenu: () =
         <h2 class={won ? 'win' : 'lose'}>{won ? 'VICTORY' : draw ? 'STALEMATE' : 'DEFEAT'}</h2>
         <p class="lead">{reason}.</p>
         <div class="grid3">
-          <div class="tile"><div class="k">Final VP</div><div class="v"><span class="blue">{Math.floor(v.vp.blue)}</span> <span class="muted">/</span> <span class="red">{Math.floor(v.vp.red)}</span></div></div>
+          <div class="tile"><div class="k">Final <Abbr term="VP" /></div><div class="v"><span class="blue">{Math.floor(v.vp.blue)}</span> <span class="muted">/</span> <span class="red">{Math.floor(v.vp.red)}</span></div></div>
           <div class="tile"><div class="k">Nodes held</div><div class="v">{held}/7</div></div>
           <div class="tile"><div class="k">Kills / losses</div><div class="v">{killed} / {lost}</div></div>
           <div class="tile"><div class="k">Staff reports</div><div class="v">{c.received.toLocaleString('en-US')}</div></div>
@@ -284,6 +289,7 @@ export function Lobby({ onStart, onLeave }: { onStart: () => void; onLeave: () =
 
 export function Menu({ onClose, onQuit, onRestart }: { onClose: () => void; onQuit: () => void; onRestart: () => void }) {
   const s = settings.value;
+  const [glossary, setGlossary] = useState(false);
   return (
     <div class="overlay">
       <div class="backdrop" onClick={onClose} />
@@ -300,6 +306,8 @@ export function Menu({ onClose, onQuit, onRestart }: { onClose: () => void; onQu
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <button class="btn primary" onClick={onClose}>Resume</button>
           <button class="btn" onClick={() => { onClose(); tourStep.value = 0; }}>Tour the war room</button>
+          <button class="btn" onClick={() => setGlossary(!glossary)}>{glossary ? 'Hide glossary' : 'Glossary of terms & acronyms'}</button>
+          {glossary && <GlossaryList />}
           {mode.value === 'solo' && <button class="btn" onClick={onRestart}>Restart match</button>}
           <button class="btn danger" onClick={onQuit}>{mode.value === 'pvp' ? 'Leave match (forfeit)' : 'Quit to title'}</button>
         </div>

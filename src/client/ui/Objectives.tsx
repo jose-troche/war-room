@@ -34,7 +34,7 @@ export function ObjectivesStrip() {
     <footer class="objectives" data-tour="objectives" aria-label="Objectives">
       <div class="lbl">
         <span class="sec-title">Objectives</span>
-        <span class="muted" style={{ fontSize: 11 }}>4+ = bonus</span>
+        <span class="muted" style={{ fontSize: 11 }} title="Hold 4 or more objectives to earn +50% VP (Victory Points)">4+ = bonus</span>
       </div>
       <ObjectiveChips />
     </footer>

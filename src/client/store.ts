@@ -30,7 +30,7 @@ const SETTINGS_KEY = 'warroom.settings.v1';
 function loadSettings(): Settings {
   const defaults: Settings = {
     voice: false, autoPause: false, coverage: true, tracks: true, threats: true,
-    legendOpen: typeof window !== 'undefined' ? window.innerWidth >= 1280 : true,
+    legendOpen: typeof window !== 'undefined' ? window.innerWidth >= 1600 : true,
     tourSeen: false, difficulty: 'veteran',
   };
   try {

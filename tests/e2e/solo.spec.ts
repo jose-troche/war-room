@@ -14,6 +14,13 @@ test('briefing states objectives, then ATLAS opens with actionable orders', asyn
   await expect(page.locator('.toast')).toContainText(/→/);
 });
 
+test('acronyms are defined on hover', async ({ page }) => {
+  await startSolo(page);
+  await page.waitForTimeout(500);
+  const vp = page.locator('abbr', { hasText: /^VP$/ }).first();
+  await expect(vp).toHaveAttribute('title', /Victory Points/);
+});
+
 test('fit all reframes the camera', async ({ page }) => {
   await startSolo(page);
   await page.waitForTimeout(800);

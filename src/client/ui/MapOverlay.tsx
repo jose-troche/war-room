@@ -4,6 +4,7 @@ import { mapCtl } from '../map/controller';
 import { COLORS, GLYPHS } from '../map/icons';
 import { clickMode, isMobile, mode, selection, settings, updateSettings, view } from '../store';
 import { Icon } from './common';
+import { Abbr } from './Gloss';
 
 export function MapControls() {
   const s = settings.value;
@@ -85,7 +86,7 @@ export function Legend() {
         <h4>Units</h4>
         <div class="grid g3">
           {UNIT_ROWS.map((t) => (
-            <span class="row" key={t}><Icon d={GLYPHS[t]} size={15} color={COLORS.inkDim} />{SHORT[t]}</span>
+            <span class="row" key={t}><Icon d={GLYPHS[t]} size={15} color={COLORS.inkDim} /><Abbr term={SHORT[t].split(' ')[0]}>{SHORT[t]}</Abbr></span>
           ))}
         </div>
       </section>
@@ -93,7 +94,7 @@ export function Legend() {
         <h4>Map</h4>
         <div class="grid">
           <span class="row"><Icon d={GLYPHS.node} size={15} color={COLORS.neutral} />Objective</span>
-          <span class="row"><Icon d={GLYPHS.hq} size={15} color={COLORS.inkDim} />HQ</span>
+          <span class="row"><Icon d={GLYPHS.hq} size={15} color={COLORS.inkDim} /><Abbr term="HQ" /></span>
           <span class="row"><Icon d={GLYPHS.airbase} size={15} color={COLORS.inkDim} />Airbase</span>
           <span class="row"><Icon d={GLYPHS.port} size={15} color={COLORS.inkDim} />Naval port</span>
           <span class="row"><span class="sw" style={{ background: 'rgba(77,163,255,.25)' }} />Our sensor cover</span>
@@ -107,10 +108,10 @@ export function Legend() {
       <section>
         <h4>Brief severity</h4>
         <div class="grid g3" style={{ gridTemplateColumns: 'repeat(4, auto)' }}>
-          <span class="row" style={{ color: COLORS.critical }}>▲ FLASH</span>
-          <span class="row" style={{ color: COLORS.high }}>● PRIORITY</span>
-          <span class="row" style={{ color: COLORS.medium }}>◆ CAUTION</span>
-          <span class="row" style={{ color: COLORS.low }}>○ ROUTINE</span>
+          <span class="row" style={{ color: COLORS.critical }}><Abbr term="FLASH">▲ FLASH</Abbr></span>
+          <span class="row" style={{ color: COLORS.high }}><Abbr term="PRIORITY">● PRIORITY</Abbr></span>
+          <span class="row" style={{ color: COLORS.medium }}><Abbr term="CAUTION">◆ CAUTION</Abbr></span>
+          <span class="row" style={{ color: COLORS.low }}><Abbr term="ROUTINE">○ ROUTINE</Abbr></span>
         </div>
       </section>
     </aside>

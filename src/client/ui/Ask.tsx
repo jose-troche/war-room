@@ -7,6 +7,8 @@ import { canListen, listen, speak, stopListening } from '../voice';
 import { setSpeed, togglePause } from './TopBar';
 import { paused, speed } from '../store';
 import { runAction } from './common';
+import { Gloss } from './Gloss';
+import { glossTitle } from '../glossary';
 
 interface Exchange { q: string; a: AskAnswer; pending?: boolean }
 
@@ -110,12 +112,12 @@ export function AskPanel({ autoFocus = false }: { autoFocus?: boolean }) {
       {ex && (
         <div class="ask-answer" role="status">
           <div class="q">You: {ex.q}</div>
-          <div class="a"><b>ATLAS:</b> {ex.a.text}</div>
-          {!!ex.a.lines?.length && <ul>{ex.a.lines.map((l) => <li key={l}>{l}</li>)}</ul>}
+          <div class="a"><b>ATLAS:</b> <Gloss text={ex.a.text} /></div>
+          {!!ex.a.lines?.length && <ul>{ex.a.lines.map((l) => <li key={l}><Gloss text={l} /></li>)}</ul>}
           {!!ex.a.actions?.length && (
             <div class="acts">
               {ex.a.actions.map((a) => (
-                <button key={a.label} class={`btn sm ${a.label === 'Confirm' || a.label.startsWith('Confirm') ? 'primary' : 'act'}`} onClick={() => {
+                <button key={a.label} title={glossTitle(a.label)} class={`btn sm ${a.label === 'Confirm' || a.label.startsWith('Confirm') ? 'primary' : 'act'}`} onClick={() => {
                   if (runAction(a) && (a.cmd || a.cmds)) setEx({ ...ex, a: { ...ex.a, actions: [] , text: `${ex.a.text} ✓ Ordered.` } });
                 }}>{a.label}</button>
               ))}
