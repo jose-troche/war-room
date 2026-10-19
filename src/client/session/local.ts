@@ -17,6 +17,7 @@ export class LocalSession implements GameSession {
   private paused = false;
   private speed = 1;
   private disposed = false;
+  private endedPublished = false;
   onView?: (v: View, intervalMs: number) => void;
 
   constructor(
@@ -46,6 +47,10 @@ export class LocalSession implements GameSession {
     if (this.disposed) return;
     const realDt = Math.min(0.25, (now - this.last) / 1000);
     this.last = now;
+    if (this.engine.s.ended && !this.endedPublished) {
+      this.endedPublished = true;
+      this.publish();
+    }
     if (!this.paused && !this.engine.s.ended) {
       const before = this.engine.s.tick;
       this.engine.step(realDt * this.speed);

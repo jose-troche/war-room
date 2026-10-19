@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.worker.json",
     "test": "vitest run",
     "e2e": "playwright test",
+    "e2e:shots": "node tests/e2e/screenshots.mjs",
     "deploy": "npm run build && wrangler deploy"
   },
   "devDependencies": {

@@ -26,6 +26,7 @@ let firstView = true;
 let briefingPending = false;
 /** mobile needs the game insets in place before framing the opening view */
 let pendingMobileFit = false;
+let attractRestart = 0;
 let lastDifficulty: Difficulty = settings.value.difficulty;
 
 function onView(v: View, interval: number) {
@@ -38,6 +39,12 @@ function onView(v: View, interval: number) {
     else camera.whenSized(() => mapCtl.initial());
   }
   if (v.ended && screen.value === 'game') setTimeout(() => (screen.value = 'aar'), 1200);
+  if (v.ended && mode.value === 'attract' && !attractRestart) {
+    attractRestart = window.setTimeout(() => {
+      attractRestart = 0;
+      if (mode.value === 'attract' && screen.value === 'landing') startAttract();
+    }, 5000);
+  }
 }
 
 function startAttract() {

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { DIFFICULTY, type Difficulty } from '../../shared/ai';
 import { RULES } from '../../shared/catalog';
 import { FACTIONS } from '../../shared/scenario';
@@ -116,52 +116,52 @@ const STEPS: Step[] = [
 
 export function Tour() {
   const step = tourStep.value;
-  const [rect, setRect] = useState<DOMRect | null>(null);
+  const [, tick] = useState(0);
   const s = step !== null && step >= 0 ? STEPS[step] : null;
-  useLayoutEffect(() => {
-    if (!s) return;
-    if (isMobile.value && s.mobileTab) {
+  // switch the mobile sheet to the panel being explained
+  useEffect(() => {
+    if (s && isMobile.value && s.mobileTab) {
       sheetTab.value = s.mobileTab;
       sheetSize.value = 'half';
     }
-    const find = () => {
-      const els = [...document.querySelectorAll<HTMLElement>(`[data-tour="${s.target}"]`)].filter((e) => e.offsetParent !== null || e.tagName === 'DIV');
-      const el = els.find((e) => e.getBoundingClientRect().width > 0);
-      setRect(el ? el.getBoundingClientRect() : null);
-    };
-    find();
-    const id = setTimeout(find, 320);
-    window.addEventListener('resize', find);
-    return () => {
-      clearTimeout(id);
-      window.removeEventListener('resize', find);
-    };
+  }, [step]);
+  // re-measure while open so the highlight follows layout changes
+  useEffect(() => {
+    if (!s) return;
+    const id = setInterval(() => tick((x) => x + 1), 250);
+    return () => clearInterval(id);
   }, [step]);
   if (step === null || step < 0 || !s) return null;
+  const el = [...document.querySelectorAll<HTMLElement>(`[data-tour="${s.target}"]`)].find((e) => e.getBoundingClientRect().width > 0);
+  const rect = el?.getBoundingClientRect() ?? null;
   const close = () => {
     tourStep.value = null;
     updateSettings({ tourSeen: true });
   };
   const pad = 6;
   const vw = window.innerWidth, vh = window.innerHeight;
-  let tipStyle: Record<string, string | number> = { left: '50%', top: '50%', transform: 'translate(-50%,-50%)' };
-  if (rect) {
-    const w = Math.min(340, vw - 24);
-    const big = rect.width > vw * 0.6 && rect.height > vh * 0.5;
-    if (big) tipStyle = { left: (vw - w) / 2, top: Math.min(vh - 220, rect.top + 70) };
-    else if (rect.right + w + 24 < vw) tipStyle = { left: rect.right + 14, top: Math.max(12, Math.min(vh - 230, rect.top)) };
-    else if (rect.left - w - 24 > 0) tipStyle = { left: rect.left - w - 14, top: Math.max(12, Math.min(vh - 230, rect.top)) };
-    else if (rect.bottom + 230 < vh) tipStyle = { left: Math.max(12, Math.min(vw - w - 12, rect.left)), top: rect.bottom + 12 };
-    else tipStyle = { left: Math.max(12, Math.min(vw - w - 12, rect.left)), top: Math.max(12, rect.top - 220) };
+  const w = Math.min(340, vw - 24);
+  const tipH = 230;
+  let left = (vw - w) / 2, top = (vh - tipH) / 2;
+  if (isMobile.value) {
+    // dock the tip where it doesn't cover the highlighted element
+    top = rect && rect.top > vh / 2 ? 70 : vh - tipH - 16;
+    if (rect && rect.height > vh * 0.6) top = vh * 0.42;
+  } else if (rect) {
+    const big = rect.width > vw * 0.5 && rect.height > vh * 0.5;
+    if (big) top = Math.min(vh - tipH, rect.top + 70);
+    else if (rect.right + w + 24 < vw) [left, top] = [rect.right + 14, Math.max(12, Math.min(vh - tipH, rect.top))];
+    else if (rect.left - w - 24 > 0) [left, top] = [rect.left - w - 14, Math.max(12, Math.min(vh - tipH, rect.top))];
+    else if (rect.bottom + tipH < vh) [left, top] = [Math.max(12, Math.min(vw - w - 12, rect.left)), rect.bottom + 12];
+    else [left, top] = [Math.max(12, Math.min(vw - w - 12, rect.left)), Math.max(12, rect.top - tipH)];
   }
+  const hole = rect
+    ? { left: Math.max(2, rect.left - pad), top: Math.max(2, rect.top - pad), width: Math.min(vw - 4, rect.width + pad * 2), height: Math.min(vh - 4, rect.height + pad * 2) }
+    : { left: vw / 2, top: vh / 2, width: 0, height: 0 };
   return (
     <>
-      {rect ? (
-        <div class="tour-hole" style={{ left: rect.left - pad, top: rect.top - pad, width: rect.width + pad * 2, height: rect.height + pad * 2 }} />
-      ) : (
-        <div class="tour-hole" style={{ left: '50%', top: '50%', width: 0, height: 0 }} />
-      )}
-      <div class="tour-tip" role="dialog" aria-label={s.title} style={tipStyle}>
+      <div class="tour-hole" style={{ left: `${hole.left}px`, top: `${hole.top}px`, width: `${hole.width}px`, height: `${hole.height}px` }} />
+      <div class="tour-tip" role="dialog" aria-label={s.title} style={{ left: `${left}px`, top: `${top}px`, width: `${w}px` }}>
         <h3>{s.title}</h3>
         <p>{s.text}</p>
         <footer>
