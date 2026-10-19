@@ -6,7 +6,7 @@ LinkedIn publishing notes (not part of the article):
 - Suggested headline (≤ 100 chars) is the H1 below. Suggested post to share the article is at the end.
 -->
 
-# Your Staff Reads 500 Reports a Minute. You Read Five. What a War Game Teaches About Agentic AI
+# Your Staff Reads 500 Reports a Minute. You Can Only Handle Five. What a War Game Teaches About Agentic AI
 
 **Most leaders aren't short of data. They're short of attention.** I built a game to show what happens when AI agents take on the reading and the human keeps the deciding.
 
