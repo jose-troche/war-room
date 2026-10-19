@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" font-family="Inter, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8FB8E8"/>
+    </marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#4ADE9B"/>
+    </marker>
+    <style>
+      .h { font-size: 15px; font-weight: 700; letter-spacing: 2px; fill: #8FB8E8; }
+      .t { font-size: 24px; font-weight: 700; fill: #F1F5FB; }
+      .b { font-size: 17px; fill: #C9D5E6; }
+      .s { font-size: 15px; fill: #93A4BC; }
+      .k { font-size: 15px; font-weight: 700; fill: #F1F5FB; }
+      .lbl { font-size: 15px; font-weight: 600; fill: #8FB8E8; }
+      .box { fill: #111C2E; stroke: #2A3B56; stroke-width: 1.5; }
+      .hot { fill: #13243D; stroke: #4DA3FF; stroke-width: 2; }
+      .pill { fill: #1A2A44; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1000" fill="#0A1220"/>
+
+  <!-- title -->
+  <text x="40" y="58" font-size="32" font-weight="800" fill="#F1F5FB">WAR ROOM — how the agentic loop is built</text>
+  <text x="40" y="90" class="s" font-size="18">Sense → Report → Prioritize → Brief → Decide → Act. The same pattern works for any business that has more signals than people to read them.</text>
+
+  <!-- decision feedback arrow (top) -->
+  <path d="M1400 160 L1400 128 L150 128 L150 160" fill="none" stroke="#4ADE9B" stroke-width="2.5" stroke-dasharray="7 6" marker-end="url(#ag)"/>
+  <rect x="560" y="113" width="480" height="30" rx="15" fill="#0A1220"/>
+  <text x="800" y="134" text-anchor="middle" font-size="16" font-weight="600" fill="#4ADE9B">DECIDE → ACT: approved orders flow back, validated</text>
+
+  <!-- 1. world -->
+  <rect class="box" x="40" y="165" width="220" height="440" rx="14"/>
+  <text class="h" x="60" y="200">1 · THE WORLD</text>
+  <text class="t" x="60" y="236">Simulation</text>
+  <text class="t" x="60" y="264">engine</text>
+  <text class="b" x="60" y="304">Ground truth: every</text>
+  <text class="b" x="60" y="326">unit, base, chokepoint</text>
+  <text class="b" x="60" y="348">and score.</text>
+  <text class="b" x="60" y="388">Ticks 4× per second.</text>
+  <text class="b" x="60" y="428">Seeded and</text>
+  <text class="b" x="60" y="450">deterministic, so it is</text>
+  <text class="b" x="60" y="472">testable and replayable.</text>
+  <text class="s" x="60" y="560">≈ your ERP, plant floor,</text>
+  <text class="s" x="60" y="582">network, or market</text>
+
+  <line x1="262" y1="385" x2="304" y2="385" stroke="#8FB8E8" stroke-width="2.5" marker-end="url(#ar)"/>
+
+  <!-- 2. need to know -->
+  <rect class="box" x="308" y="165" width="200" height="440" rx="14"/>
+  <text class="h" x="328" y="200">2 · NEED-TO-KNOW</text>
+  <text class="t" x="328" y="236">Fog of war</text>
+  <text class="t" x="328" y="264">filter</text>
+  <text class="b" x="328" y="304">Each side gets a</text>
+  <text class="b" x="328" y="326">“view” of only what</text>
+  <text class="b" x="328" y="348">its sensors detect.</text>
+  <text class="b" x="328" y="388">Agents never see</text>
+  <text class="b" x="328" y="410">more than the</text>
+  <text class="b" x="328" y="432">human could.</text>
+  <text class="s" x="328" y="560">≈ permissions and</text>
+  <text class="s" x="328" y="582">data access policy</text>
+
+  <line x1="510" y1="385" x2="552" y2="385" stroke="#8FB8E8" stroke-width="2.5" marker-end="url(#ar)"/>
+
+  <!-- 3. staff -->
+  <rect class="box" x="556" y="165" width="290" height="440" rx="14"/>
+  <text class="h" x="576" y="200">3 · SENSE &amp; REPORT</text>
+  <text class="t" x="576" y="236">7 specialist agents</text>
+  <g>
+    <rect class="pill" x="576" y="256" width="250" height="34" rx="8"/><text class="k" x="590" y="279">VIGIL</text><text class="s" x="680" y="279">Intelligence</text>
+    <rect class="pill" x="576" y="296" width="250" height="34" rx="8"/><text class="k" x="590" y="319">FALCON</text><text class="s" x="680" y="319">Air</text>
+    <rect class="pill" x="576" y="336" width="250" height="34" rx="8"/><text class="k" x="590" y="359">TRIDENT</text><text class="s" x="680" y="359">Sea</text>
+    <rect class="pill" x="576" y="376" width="250" height="34" rx="8"/><text class="k" x="590" y="399">BULWARK</text><text class="s" x="680" y="399">Land</text>
+    <rect class="pill" x="576" y="416" width="250" height="34" rx="8"/><text class="k" x="590" y="439">SWARM</text><text class="s" x="680" y="439">Unmanned</text>
+    <rect class="pill" x="576" y="456" width="250" height="34" rx="8"/><text class="k" x="590" y="479">ORBIT</text><text class="s" x="680" y="479">Space</text>
+    <rect class="pill" x="576" y="496" width="250" height="34" rx="8"/><text class="k" x="590" y="519">QUARTERMASTER</text><text class="s" x="740" y="519">Logistics</text>
+  </g>
+  <text class="s" x="576" y="560">Each one watches one domain</text>
+  <text class="s" x="576" y="582">and emits structured reports</text>
+
+  <line x1="848" y1="385" x2="890" y2="385" stroke="#8FB8E8" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text class="lbl" x="869" y="362" text-anchor="middle">100+</text>
+  <text class="lbl" x="869" y="414" text-anchor="middle">/min</text>
+
+  <!-- 4. atlas -->
+  <rect class="hot" x="894" y="165" width="300" height="440" rx="14"/>
+  <text class="h" x="914" y="200">4 · PRIORITIZE</text>
+  <text class="t" x="914" y="236">ATLAS</text>
+  <text class="s" x="1000" y="236">Chief of Staff agent</text>
+  <text class="k" x="914" y="280">Score</text>
+  <text class="s" x="914" y="301">severity × relevance × proximity</text>
+  <text class="s" x="914" y="320">× novelty × time decay</text>
+  <text class="k" x="914" y="356">De-duplicate</text>
+  <text class="s" x="914" y="377">repeats merge into one card (×3)</text>
+  <text class="k" x="914" y="413">Throttle</text>
+  <text class="s" x="914" y="434">at most 5 items · one new every few s</text>
+  <text class="k" x="914" y="470">Escalate</text>
+  <text class="s" x="914" y="491">FLASH · PRIORITY · ROUTINE digest</text>
+  <text class="k" x="914" y="527">Recommend</text>
+  <text class="s" x="914" y="548">1–2 concrete actions with ETAs,</text>
+  <text class="s" x="914" y="567">built from assets actually available</text>
+
+  <line x1="1196" y1="385" x2="1238" y2="385" stroke="#8FB8E8" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text class="lbl" x="1217" y="362" text-anchor="middle">≤ 5</text>
+
+  <!-- 5. human -->
+  <rect class="box" x="1242" y="165" width="318" height="440" rx="14" stroke="#4ADE9B"/>
+  <text class="h" x="1262" y="200" fill="#4ADE9B">5 · BRIEF &amp; DECIDE</text>
+  <text class="t" x="1262" y="236">Human commander</text>
+  <text class="b" x="1262" y="280">Reads a short, ranked brief,</text>
+  <text class="b" x="1262" y="302">not the firehose.</text>
+  <text class="b" x="1262" y="342">Approves a recommended</text>
+  <text class="b" x="1262" y="364">action in one click, or</text>
+  <text class="b" x="1262" y="386">picks something else.</text>
+  <text class="b" x="1262" y="426">Drills down to raw data</text>
+  <text class="b" x="1262" y="448">whenever they want.</text>
+  <rect x="1262" y="480" width="278" height="100" rx="10" fill="#0E2A22" stroke="#2C6B52"/>
+  <text x="1401" y="520" text-anchor="middle" font-size="30" font-weight="800" fill="#F1F5FB">1,284 → 37</text>
+  <text x="1401" y="552" text-anchor="middle" class="s">reports received → surfaced</text>
+
+  <!-- ask atlas -->
+  <rect class="box" x="894" y="635" width="666" height="150" rx="14"/>
+  <text class="h" x="914" y="668">ASK ATLAS · PLAIN-LANGUAGE QUESTIONS, TEXT OR VOICE</text>
+  <rect class="pill" x="914" y="686" width="300" height="80" rx="10"/>
+  <text class="k" x="932" y="714">Rules-based parser first</text>
+  <text class="s" x="932" y="736">Instant, free, predictable.</text>
+  <text class="s" x="932" y="756">Commands need a Confirm click.</text>
+  <line x1="1216" y1="726" x2="1248" y2="726" stroke="#8FB8E8" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text class="s" x="1232" y="752" text-anchor="middle">else</text>
+  <rect class="pill" x="1252" y="686" width="288" height="80" rx="10"/>
+  <text class="k" x="1270" y="714">LLM fallback (grounded)</text>
+  <text class="s" x="1270" y="736">Sees only a 2 KB situation summary;</text>
+  <text class="s" x="1270" y="756">≤ 60 words; never invents facts.</text>
+  <line x1="1401" y1="607" x2="1401" y2="632" stroke="#8FB8E8" stroke-width="2.5" marker-end="url(#ar)"/>
+
+  <!-- trust layer -->
+  <rect class="box" x="40" y="635" width="830" height="150" rx="14"/>
+  <text class="h" x="60" y="668">TRUST LAYER · WHAT MAKES IT SAFE TO DELEGATE</text>
+  <text class="k" x="60" y="706">✓ Human approves every action</text>
+  <text class="k" x="60" y="738">✓ Server validates every order</text>
+  <text class="k" x="60" y="770">✓ Agents see only their side’s data</text>
+  <text class="k" x="470" y="706">✓ Raw report feed always one click away</text>
+  <text class="k" x="470" y="738">✓ Signal-vs-noise meter on screen</text>
+  <text class="k" x="470" y="770">✓ Deterministic core, AI at the edges</text>
+
+  <!-- platform -->
+  <text class="h" x="40" y="836">RUNS ON</text>
+  <rect class="box" x="40" y="852" width="500" height="110" rx="12"/>
+  <text class="k" x="60" y="884">Browser (solo play)</text>
+  <text class="s" x="60" y="908">Engine, 7 agents, ATLAS, map and voice all run</text>
+  <text class="s" x="60" y="930">on the player’s device. Server cost per match: $0.</text>
+  <text class="s" x="60" y="952">TypeScript · Preact · Canvas 2D · Web Speech</text>
+  <rect class="box" x="560" y="852" width="500" height="110" rx="12"/>
+  <text class="k" x="580" y="884">Cloudflare Worker + Durable Object (multiplayer)</text>
+  <text class="s" x="580" y="908">One object per room runs the same engine code as</text>
+  <text class="s" x="580" y="930">the source of truth; each player gets only their view</text>
+  <text class="s" x="580" y="952">over a WebSocket.</text>
+  <rect class="box" x="1080" y="852" width="480" height="110" rx="12"/>
+  <text class="k" x="1100" y="884">Workers AI (optional)</text>
+  <text class="s" x="1100" y="908">Small open model called only for open-ended</text>
+  <text class="s" x="1100" y="930">questions the parser can’t handle. The game</text>
+  <text class="s" x="1100" y="952">works fully without it.</text>
+</svg>
