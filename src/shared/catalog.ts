@@ -166,6 +166,7 @@ export const RULES = {
   dt: 0.25,
   vpTarget: 1000,
   timeLimit: 900,
+  vpPerNode: 0.35,
   majorityNodes: 4,
   majorityBonus: 1.5,
   baseCp: 2,

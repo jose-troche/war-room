@@ -176,6 +176,8 @@ export interface GameState {
   contacts: Record<Side, Record<string, Contact>>;
   stats: Record<Side, SideStats>;
   nextId: number;
+  /** income multiplier per side (AI difficulty handicap) */
+  cpMult?: Record<Side, number>;
   winner: Side | null;
   reason: string | null;
   ended: boolean;

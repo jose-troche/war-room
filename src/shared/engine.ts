@@ -1020,7 +1020,7 @@ export class Engine {
 
   vpRate(side: Side): number {
     const held = this.nodesHeld(side);
-    return held * (held >= RULES.majorityNodes ? RULES.majorityBonus : 1);
+    return held * RULES.vpPerNode * (held >= RULES.majorityNodes ? RULES.majorityBonus : 1);
   }
 
   cpRate(side: Side): number {
@@ -1031,7 +1031,7 @@ export class Engine {
     const s = this.s;
     for (const side of SIDES) {
       s.vp[side] += this.vpRate(side) * dt;
-      s.cp[side] += this.cpRate(side) * dt;
+      s.cp[side] += this.cpRate(side) * (s.cpMult?.[side] ?? 1) * dt;
     }
     if (s.tick % Math.round(5 / RULES.dt) === 0) {
       for (const side of SIDES) {
